@@ -1,4 +1,6 @@
-namespace Application\Model
+<?php
+
+namespace Application\Model;
 
 class City
 {
@@ -11,7 +13,7 @@ class City
     public $landAreaSquareMiles;
     public $coordinatesNorth;
     public $coordinatesWest;
-    
+
     public function exchangeArray($data)
     {
         $this->id                  = (!empty($data['id']))                  ? $data['id'] : null;

@@ -1,3 +1,5 @@
+<?php
+
 namespace Application\Model;
 
 use Zend\Db\TableGateway\TableGateway;
@@ -24,7 +26,7 @@ class CityTable
         $row = $rowset->current();
         return $row;
     }
-    
+
     public function getCityByName($name)
     {
         $name = (string) $name;

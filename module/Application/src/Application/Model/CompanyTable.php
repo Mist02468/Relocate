@@ -1,3 +1,5 @@
+<?php
+
 namespace Application\Model;
 
 use Zend\Db\TableGateway\TableGateway;

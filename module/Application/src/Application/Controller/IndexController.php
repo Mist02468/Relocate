@@ -14,8 +14,24 @@ use Zend\View\Model\ViewModel;
 
 class IndexController extends AbstractActionController
 {
+    protected $cityTable;
+
     public function indexAction()
     {
-        return new ViewModel();
+        //get the Mapbox API key from my local file
+        $secrets     = parse_ini_file('config/autoload/localSecrets.ini');
+        $accessToken = $secrets['MapboxAccessToken'];
+        $projectId   = $secrets['MapboxProjectId'];
+
+        return new ViewModel(array('mapboxAccessToken' => $accessToken, 'mapboxProjectId' => $projectId, 'cities' => $this->getCityTable()->fetchAll()));
+    }
+
+    public function getCityTable()
+    {
+        if (!$this->cityTable) {
+            $sm = $this->getServiceLocator();
+            $this->cityTable = $sm->get('Application\Model\cityTable');
+        }
+        return $this->cityTable;
     }
 }
