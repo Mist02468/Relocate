@@ -8,6 +8,7 @@ class City
     public $name;
     public $state;
     public $walkScore;
+    public $transitScore;
     public $avgTemp;
     public $population;
     public $landAreaSquareMiles;
@@ -20,6 +21,7 @@ class City
         $this->name                = (!empty($data['name']))                ? $data['name'] : null;
         $this->state               = (!empty($data['state']))               ? $data['state'] : null;
         $this->walkScore           = (!empty($data['walkScore']))           ? $data['walkScore'] : null;
+        $this->transitScore        = (!empty($data['transitScore']))        ? $data['transitScore'] : null;
         $this->avgTemp             = (!empty($data['avgTemp']))             ? $data['avgTemp'] : null;
         $this->population          = (!empty($data['population']))          ? $data['population'] : null;
         $this->landAreaSquareMiles = (!empty($data['landAreaSquareMiles'])) ? $data['landAreaSquareMiles'] : null;
