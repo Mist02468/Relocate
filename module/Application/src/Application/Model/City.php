@@ -6,7 +6,7 @@ class City
 {
     public $id;
     public $name;
-    public $state;
+    public $state_id;
     public $walkScore;
     public $transitScore;
     public $avgTemp;
@@ -19,7 +19,7 @@ class City
     {
         $this->id                  = (!empty($data['id']))                  ? $data['id'] : null;
         $this->name                = (!empty($data['name']))                ? $data['name'] : null;
-        $this->state               = (!empty($data['state']))               ? $data['state'] : null;
+        $this->state_id            = (!empty($data['state_id']))            ? $data['state_id'] : null;
         $this->walkScore           = (!empty($data['walkScore']))           ? $data['walkScore'] : null;
         $this->transitScore        = (!empty($data['transitScore']))        ? $data['transitScore'] : null;
         $this->avgTemp             = (!empty($data['avgTemp']))             ? $data['avgTemp'] : null;
