@@ -38,7 +38,16 @@ class CityTable
     public function saveCity(City $city)
     {
         $data = array(
-            'name' => $city->name
+            'name'                 => $city->name,
+            'state_id'             => $city->state_id,
+            'walkScore'            => $city->walkScore,
+            'transitScore'         => $city->transitScore,
+            'avgTemp'              => $city->avgTemp,
+            'population'           => $city->population,
+            'landAreaSquareMiles'  => $city->landAreaSquareMiles,
+            'coordinatesNorth'     => $city->coordinatesNorth,
+            'coordinatesWest'      => $city->coordinatesWest,
+            'companiesLastUpdated' => $city->companiesLastUpdated
         );
 
         $id = (int) $city->id;

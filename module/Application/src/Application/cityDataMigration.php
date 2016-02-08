@@ -12,13 +12,14 @@ $columns = array(
             'avgTemp'             => 8
            );
 
-$dbHandle      = new PDO('mysql:host=localhost;port=3305;dbname=relocate', 'root', 'bitnami');
+$secrets  = parse_ini_file('config/autoload/localSecrets.ini');
+$dbHandle = new PDO('mysql:host=' . $secrets['Host'] . ';port=' . $secrets['Port'] . ';dbname=' . $secrets['Database'], $secrets['Username'], $secrets['Password']);
 $csvFileHandle = fopen("dataAboutCities.csv", "r");
 
 if ($csvFileHandle !== False) {
     while (($csvRow = fgetcsv($csvFileHandle)) !== False) {
 
-        $stmt = $dbHandle->prepare('SELECT id FROM state where name = :name');
+        $stmt = $dbHandle->prepare('SELECT id FROM state WHERE name = :name');
         $stmt->bindParam(':name', $csvRow[$columns['stateName']], PDO::PARAM_STR);
         $stmt->execute();
         $results = $stmt->fetchAll();
@@ -37,28 +38,17 @@ if ($csvFileHandle !== False) {
             throw new Exception('Found more than one row in the states table with the name ' . $csvRow[$columns['stateName']]);
         }
 
-        $stmt = $dbHandle->prepare('SELECT id FROM city where name = :name');
+        $stmt = $dbHandle->prepare('INSERT INTO city (name, state_id, walkScore, transitScore, avgTemp, population, landAreaSquareMiles, coordinatesNorth, coordinatesWest) VALUES (:name, :state_id, :walkScore, :transitScore, :avgTemp, :population, :landAreaSquareMiles, :coordinatesNorth, :coordinatesWest)');
         $stmt->bindParam(':name', $csvRow[$columns['cityName']], PDO::PARAM_STR);
+        $stmt->bindParam(':state_id', $stateID, PDO::PARAM_INT);
+        $stmt->bindParam(':walkScore', $csvRow[$columns['walkScore']], PDO::PARAM_INT);
+        $stmt->bindParam(':transitScore', $csvRow[$columns['transitScore']], PDO::PARAM_INT);
+        $stmt->bindParam(':avgTemp', $csvRow[$columns['avgTemp']]);
+        $stmt->bindParam(':population', $csvRow[$columns['population']], PDO::PARAM_INT);
+        $stmt->bindParam(':landAreaSquareMiles', $csvRow[$columns['landAreaSquareMiles']]);
+        $stmt->bindParam(':coordinatesNorth', $csvRow[$columns['coordinatesNorth']]);
+        $stmt->bindParam(':coordinatesWest', $csvRow[$columns['coordinatesWest']]);
         $stmt->execute();
-        $results = $stmt->fetchAll();
-
-        if (count($results) === 0) {
-            //this city has not been added to the database yet, do so
-            $stmt = $dbHandle->prepare('INSERT INTO city (name, state_id, walkScore, transitScore, avgTemp, population, landAreaSquareMiles, coordinatesNorth, coordinatesWest) VALUES (:name, :state_id, :walkScore, :transitScore, :avgTemp, :population, :landAreaSquareMiles, :coordinatesNorth, :coordinatesWest)');
-            $stmt->bindParam(':name', $csvRow[$columns['cityName']], PDO::PARAM_STR);
-            $stmt->bindParam(':state_id', $stateID, PDO::PARAM_INT);
-            $stmt->bindParam(':walkScore', $csvRow[$columns['walkScore']], PDO::PARAM_INT);
-            $stmt->bindParam(':transitScore', $csvRow[$columns['transitScore']], PDO::PARAM_INT);
-            $stmt->bindParam(':avgTemp', $csvRow[$columns['avgTemp']]);
-            $stmt->bindParam(':population', $csvRow[$columns['population']], PDO::PARAM_INT);
-            $stmt->bindParam(':landAreaSquareMiles', $csvRow[$columns['landAreaSquareMiles']]);
-            $stmt->bindParam(':coordinatesNorth', $csvRow[$columns['coordinatesNorth']]);
-            $stmt->bindParam(':coordinatesWest', $csvRow[$columns['coordinatesWest']]);
-            $stmt->execute();
-        } elseif (count($results) > 1) {
-            //this city is in the database more than once, this should not occur
-            throw new Exception('Found more than one row in the cities table with the name ' . $csvRow[$columns['cityName']]);
-        }
     }
     fclose($csvFileHandle);
 } else {
