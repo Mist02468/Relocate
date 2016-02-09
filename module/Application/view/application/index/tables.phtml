@@ -1,0 +1,25 @@
+<!--Tables Page-->
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>State</th>
+        <th>Walk Score</th>
+        <th>Transit Score</th>
+        <th>Average Temperature</th>
+        <th>Population</th>
+        <th>Area</th>
+    </tr>
+
+    <?php foreach ($cities as $city) : ?>
+        <tr>
+            <td><?php echo $this->escapeHtml($city->name);?></td>
+            <td><?php echo $this->escapeHtml($stateTable->getState($city->state_id)->name);?></td>
+            <td><?php echo $this->escapeHtml($city->walkScore);?></td>
+            <td><?php echo $this->escapeHtml($city->transitScore);?></td>
+            <td><?php echo $this->escapeHtml($city->avgTemp);?></td>
+            <td><?php echo $this->escapeHtml($city->population);?></td>
+            <td><?php echo $this->escapeHtml($city->landAreaSquareMiles);?></td>
+        </tr>
+    <?php endforeach; ?>
+</table>
