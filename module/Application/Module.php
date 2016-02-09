@@ -15,10 +15,12 @@ use Zend\Mvc\MvcEvent;
 use Application\Model\State;
 use Application\Model\City;
 use Application\Model\Company;
+use Application\Model\CompanyLocation;
 
 use Application\Model\StateTable;
 use Application\Model\CityTable;
 use Application\Model\CompanyTable;
+use Application\Model\CompanyLocationTable;
 
 use Zend\Db\ResultSet\ResultSet;
 use Zend\Db\TableGateway\TableGateway;
@@ -47,7 +49,7 @@ class Module
             ),
         );
     }
-    
+
     public function getServiceConfig()
     {
         return array(
@@ -67,6 +69,11 @@ class Module
                     $table = new CompanyTable($tableGateway);
                     return $table;
                 },
+                'Application\Model\CompanyLocationTable' =>  function($sm) {
+                    $tableGateway = $sm->get('CompanyLocationTableGateway');
+                    $table = new CompanyLocationTable($tableGateway);
+                    return $table;
+                },
                 'StateTableGateway' => function ($sm) {
                     $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
                     $resultSetPrototype = new ResultSet();
@@ -84,6 +91,12 @@ class Module
                     $resultSetPrototype = new ResultSet();
                     $resultSetPrototype->setArrayObjectPrototype(new Company());
                     return new TableGateway('company', $dbAdapter, null, $resultSetPrototype);
+                },
+                'CompanyLocationTableGateway' => function ($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $resultSetPrototype = new ResultSet();
+                    $resultSetPrototype->setArrayObjectPrototype(new CompanyLocation());
+                    return new TableGateway('companyLocation', $dbAdapter, null, $resultSetPrototype);
                 },
             ),
         );

@@ -23,11 +23,12 @@ class IndexController extends AbstractActionController
         $accessToken = $secrets['MapboxAccessToken'];
         $projectId   = $secrets['MapboxProjectId'];
 
-        $serviceManager = $this->getServiceLocator();
-        $cities         = $serviceManager->get('Application\Model\CityTable')->fetchAll();
+        $serviceManager   = $this->getServiceLocator();
+        $cities           = $serviceManager->get('Application\Model\CityTable')->fetchAll();
         $cities->buffer();
+        $companyLocations = $serviceManager->get('Application\Model\CompanyLocationTable')->fetchAll();
 
         return new ViewModel(array('mapboxAccessToken' => $accessToken, 'mapboxProjectId' => $projectId,
-                                   'cities' => $cities, 'stateTable' => $serviceManager->get('Application\Model\StateTable')));
+                                   'cities' => $cities, 'stateTable' => $serviceManager->get('Application\Model\StateTable'), 'companyLocations' => $companyLocations));
     }
 }

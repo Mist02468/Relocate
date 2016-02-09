@@ -1,8 +1,10 @@
 <!--Homepage-->
 
-<!--Leafletjs styles and scripts-->
+<!--Leafletjs styles, Leafletjs scripts, and MaskCanvas plugin scripts-->
 <?php echo $this->headLink()->appendStylesheet('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css') ?>
-<?php echo $this->headScript()->appendFile('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js') ?>
+<?php echo $this->headScript()->appendFile('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js')
+                              ->appendFile($this->basePath() . '/js/QuadTree.js')
+                              ->appendFile($this->basePath() . '/js/L.TileLayer.MaskCanvas.js') ?>
 
 <!--Placeholder for the map-->
 <div id="map"></div>
@@ -52,5 +54,14 @@ function onMarkerClick(e) {
     marker.bindPopup('<?php echo $this->escapeHtml($city->name);?>');
     marker.on('click', onMarkerClick);
 <?php endforeach; ?>
+
+var data = [];
+<?php foreach ($companyLocations as $companyLocation) : ?>
+    data.push(['<?php echo $this->escapeHtml($companyLocation->coordinatesNorth);?>', '<?php echo $this->escapeHtml($companyLocation->coordinatesWest);?>']);
+<?php endforeach; ?>
+
+var layer = L.TileLayer.maskCanvas();
+layer.setData(data);
+map.addLayer(layer);
 
 </script>
