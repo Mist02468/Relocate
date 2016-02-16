@@ -11,6 +11,7 @@ namespace Application\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Zend\View\Model\JsonModel;
 
 class IndexController extends AbstractActionController
 {
@@ -36,11 +37,28 @@ class IndexController extends AbstractActionController
 
     public function tablesAction()
     {
-        $serviceManager   = $this->getServiceLocator();
-        $cities           = $serviceManager->get('Application\Model\CityTable')->fetchAll();
-        $companyLocations = $serviceManager->get('Application\Model\CompanyLocationTable')->fetchAll();
+        return new ViewModel();
+    }
 
-        return new ViewModel(array('cities' => $cities, 'stateTable' => $serviceManager->get('Application\Model\StateTable'),
-                                   'companyLocations' => $companyLocations));
+    public function tablesAjaxAction()
+    {
+        $db = $this->getServiceLocator()->get('db');
+
+        $sql = <<<SQL
+SELECT city.name AS cityName, state.name AS stateName, walkScore, transitScore, avgTemp, population, landAreaSquareMiles,
+       GROUP_CONCAT(DISTINCT company.name ORDER BY company.name ASC) AS companies
+FROM city
+INNER JOIN state ON state.id = city.state_id
+INNER JOIN companyLocation ON companyLocation.city_id = city.id
+INNER JOIN company ON company.id = companyLocation.company_id
+GROUP BY city.id
+SQL;
+        $stmt           = $db->query($sql);
+        $resultSet      = $stmt->execute();
+        $result         = $resultSet->getResource()->fetchAll(\PDO::FETCH_NAMED);
+        $resultPrepared = array("data" => $result);
+
+        $this->response->setContent(\Zend\Json\Json::encode($resultPrepared));
+        return $this->response;
     }
 }

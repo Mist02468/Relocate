@@ -31,6 +31,7 @@ class CompanyLocationTable
     {
         $data = array(
             'city_id'          => $companyLocation->city_id,
+            'company_id'       => $companyLocation->company_id,
             'coordinatesNorth' => $companyLocation->coordinatesNorth,
             'coordinatesWest'  => $companyLocation->coordinatesWest
         );

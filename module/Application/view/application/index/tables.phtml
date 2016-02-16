@@ -1,25 +1,81 @@
 <!--Tables Page-->
 
-<table>
-    <tr>
-        <th>Name</th>
-        <th>State</th>
-        <th>Walk Score</th>
-        <th>Transit Score</th>
-        <th>Average Temperature</th>
-        <th>Population</th>
-        <th>Area</th>
-    </tr>
+<!--DataTables styles and scripts-->
+<?php echo $this->headLink()->appendStylesheet($this->basePath() . '/css/jquery.dataTables.css') ?>
+<?php echo $this->headLink()->appendStylesheet($this->basePath() . '/css/dataTables.bootstrap.min.css') ?>
 
-    <?php foreach ($cities as $city) : ?>
+<?php echo $this->headScript()->appendFile($this->basePath() . '/js/jquery.dataTables.js') ?>
+<?php echo $this->headScript()->appendFile($this->basePath() . '/js/dataTables.bootstrap.min.js') ?>
+
+<table id="main" class="table table-striped table-bordered">
+    <thead>
         <tr>
-            <td><?php echo $this->escapeHtml($city->name);?></td>
-            <td><?php echo $this->escapeHtml($stateTable->getState($city->state_id)->name);?></td>
-            <td><?php echo $this->escapeHtml($city->walkScore);?></td>
-            <td><?php echo $this->escapeHtml($city->transitScore);?></td>
-            <td><?php echo $this->escapeHtml($city->avgTemp);?></td>
-            <td><?php echo $this->escapeHtml($city->population);?></td>
-            <td><?php echo $this->escapeHtml($city->landAreaSquareMiles);?></td>
+            <th></th>
+            <th>Name</th>
+            <th>State</th>
+            <th>Walk Score</th>
+            <th>Transit Score</th>
+            <th>Average Temperature</th>
+            <th>Population</th>
+            <th>Area</th>
         </tr>
-    <?php endforeach; ?>
+    </thead>
 </table>
+
+<script>
+
+function format (d) {
+    var companiesArray = d.companies.split(',');
+    var html = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
+
+    var numCompanies = companiesArray.length;
+    for (var i = 0; i < numCompanies; i++) {
+        html = html.concat('<tr>' +
+                              '<td>' + companiesArray[i] +'</td>' +
+                           '</tr>');
+    }
+
+    html = html.concat('</table>')
+    return html;
+}
+
+$(document).ready(function() {
+    var table = $('#main').DataTable({
+        "ajax": "<?php echo $this->url('application') ?>/index/tablesAjax",
+        "columns": [
+            {
+                "className":      'details-control',
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": ''
+            },
+            { "data": "cityName" },
+            { "data": "stateName" },
+            { "data": "walkScore" },
+            { "data": "transitScore" },
+            { "data": "avgTemp" },
+            { "data": "population" },
+            { "data": "landAreaSquareMiles" }
+        ],
+        "order": [[1, 'asc']]
+    });
+
+    //Event listener for opening and closing child rows
+    $('#main tbody').on('click', 'td.details-control', function () {
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+
+        if (row.child.isShown()) {
+            //Row is open, close it
+            row.child.hide();
+            tr.removeClass('shown');
+        }
+        else {
+            //Row is closed, open it
+            row.child(format(row.data())).show();
+            tr.addClass('shown');
+        }
+    });
+});
+
+</script>

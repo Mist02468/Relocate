@@ -84,16 +84,16 @@ function gatherDataForACity($publisherId, $cityId, $cityName, $stateAbbreviation
     $totalResults = intval($response->totalresults->__toString());
 
     $numProcessed  = 0;
-    $numProcessed += processPageOfResults($response->results->result);
+    $numProcessed += processPageOfResults($response->results->result, $cityId);
 
     while ($numProcessed < $totalResults) {
         $request       = 'http://api.indeed.com/ads/apisearch?publisher=' . $publisherId . '&q=software+developer&l=' . urlencode($location) . '&sort=&radius=&st=&jt=fulltime&start=' . $numProcessed . '&limit=25&fromage=' . $fromAge . '&filter=&latlong=1&co=us&chnl=&userip=1.2.3.4&useragent=Mozilla/%2F4.0%28Firefox%29&v=2';
         $response      = makeCurlRequest($request);
-        $numProcessed += processPageOfResults($response->results->result);
+        $numProcessed += processPageOfResults($response->results->result, $cityId);
     }
 }
 
-function processPageOfResults($results) {
+function processPageOfResults($results, $cityId) {
     $numProcessed = 0;
     foreach ($results as $result) {
         $companyName = $result->company->__toString();
@@ -101,7 +101,7 @@ function processPageOfResults($results) {
 
         $companyLatitude  = floatval($result->latitude->__toString());
         $companyLongitude = floatval($result->longitude->__toString());
-        createCompanyLocationIfNecessary($companyId, $companyLatitude, $companyLongitude);
+        createCompanyLocationIfNecessary($companyId, $companyLatitude, $companyLongitude, $cityId);
         $numProcessed++;
     }
     return $numProcessed;
@@ -131,10 +131,11 @@ function getOrCreateCompany($name) {
     return $companyId;
 }
 
-function createCompanyLocationIfNecessary($id, $latitude, $longitude) {
+function createCompanyLocationIfNecessary($id, $latitude, $longitude, $cityId) {
     global $dbHandle;
 
-    $stmt = $dbHandle->prepare('SELECT COUNT(*) AS isMatchingCompanyLocation FROM companyLocation WHERE company_id = :id AND coordinatesNorth = :coordinatesNorth AND coordinatesWest  = :coordinatesWest');
+    $stmt = $dbHandle->prepare('SELECT COUNT(*) AS isMatchingCompanyLocation FROM companyLocation WHERE city_id = :city_id AND company_id = :id AND coordinatesNorth = :coordinatesNorth AND coordinatesWest = :coordinatesWest');
+    $stmt->bindParam(':city_id', $cityId, PDO::PARAM_INT);
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->bindParam(':coordinatesNorth', $latitude);
     $stmt->bindParam(':coordinatesWest',  $longitude);
@@ -142,7 +143,8 @@ function createCompanyLocationIfNecessary($id, $latitude, $longitude) {
 
     $results = $stmt->fetchAll();
     if (intval($results[0]['isMatchingCompanyLocation']) === 0) {
-        $stmt = $dbHandle->prepare('INSERT INTO companyLocation (company_id, coordinatesNorth, coordinatesWest) VALUES (:company_id, :coordinatesNorth, :coordinatesWest)');
+        $stmt = $dbHandle->prepare('INSERT INTO companyLocation (city_id, company_id, coordinatesNorth, coordinatesWest) VALUES (:city_id, :company_id, :coordinatesNorth, :coordinatesWest)');
+        $stmt->bindParam(':city_id', $cityId, PDO::PARAM_INT);
         $stmt->bindParam(':company_id', $id, PDO::PARAM_INT);
         $stmt->bindParam(':coordinatesNorth', $latitude);
         $stmt->bindParam(':coordinatesWest',  $longitude);

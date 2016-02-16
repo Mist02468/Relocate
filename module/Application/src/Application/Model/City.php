@@ -15,7 +15,7 @@ class City
     public $coordinatesNorth;
     public $coordinatesWest;
     public $companiesLastUpdated;
-
+    
     public function exchangeArray($data)
     {
         $this->id                   = (!empty($data['id']))                   ? $data['id'] : null;
