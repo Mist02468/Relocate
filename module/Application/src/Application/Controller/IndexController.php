@@ -46,7 +46,7 @@ class IndexController extends AbstractActionController
 
         $sql = <<<SQL
 SELECT city.name AS cityName, state.name AS stateName, walkScore, transitScore, avgTemp, population, landAreaSquareMiles,
-       GROUP_CONCAT(DISTINCT company.name ORDER BY company.name ASC) AS companies
+       GROUP_CONCAT(DISTINCT company.name ORDER BY company.name ASC SEPARATOR ';') AS companies
 FROM city
 INNER JOIN state ON state.id = city.state_id
 INNER JOIN companyLocation ON companyLocation.city_id = city.id

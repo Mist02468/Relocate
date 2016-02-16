@@ -2,10 +2,8 @@
 
 <!--DataTables styles and scripts-->
 <?php echo $this->headLink()->appendStylesheet($this->basePath() . '/css/jquery.dataTables.css') ?>
-<?php echo $this->headLink()->appendStylesheet($this->basePath() . '/css/dataTables.bootstrap.min.css') ?>
 
 <?php echo $this->headScript()->appendFile($this->basePath() . '/js/jquery.dataTables.js') ?>
-<?php echo $this->headScript()->appendFile($this->basePath() . '/js/dataTables.bootstrap.min.js') ?>
 
 <table id="main" class="table table-striped table-bordered">
     <thead>
@@ -25,7 +23,7 @@
 <script>
 
 function format (d) {
-    var companiesArray = d.companies.split(',');
+    var companiesArray = d.companies.split(';');
     var html = '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">';
 
     var numCompanies = companiesArray.length;

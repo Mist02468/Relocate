@@ -8,9 +8,9 @@ body {
 }
 
 td.details-control {
-    background: url('../resources/details_open.png') no-repeat center center;
+    background: url('../images/glyphicons-191-plus-sign.png') no-repeat center center;
     cursor: pointer;
 }
 tr.shown td.details-control {
-    background: url('../resources/details_close.png') no-repeat center center;
+    background: url('../images/glyphicons-192-minus-sign.png') no-repeat center center;
 }
