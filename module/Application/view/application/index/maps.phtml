@@ -3,7 +3,7 @@
 <!--Leafletjs styles, Leafletjs scripts, and MaskCanvas plugin scripts-->
 <?php echo $this->headLink()->appendStylesheet('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css')
                             ->appendStylesheet($this->basePath() . '/css/MarkerCluster.css')
-                            ->appendStylesheet($this->basePath() . '/css/MarkerCluster.Default.css')?>
+                            ->appendStylesheet($this->basePath() . '/css/MarkerCluster.Custom.css')?>
 <?php echo $this->headScript()->appendFile('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js')
                               ->appendFile($this->basePath() . '/js/QuadTree.js')
                               ->appendFile($this->basePath() . '/js/L.TileLayer.MaskCanvas.js')
@@ -32,14 +32,20 @@ function onCompanyMarkerClick(e) {
 }
 
 <?php foreach ($cities as $city) : ?>
-    var lat  = parseFloat('<?php echo $this->escapeHtml($city->coordinatesNorth);?>');
-    var long = parseFloat('<?php echo $this->escapeHtml($city->coordinatesWest);?>');
+    var lat    = parseFloat('<?php echo $this->escapeHtml($city->coordinatesNorth);?>');
+    var long   = parseFloat('<?php echo $this->escapeHtml($city->coordinatesWest);?>');
     var marker = L.marker([lat, long]).addTo(map);
-    marker.bindPopup('<?php echo $this->escapeHtml($city->name);?>');
+    var info   = '<b><?php echo $this->escapeHtml($city->name) . ', ' . $this->escapeHtml($this->stateTable->getState($city->state_id)->name);?></b><br>';
+    info       = info.concat('Walk Score: <?php echo $this->escapeHtml($city->walkScore);?><br>');
+    info       = info.concat('Transit Score: <?php echo $this->escapeHtml($city->transitScore);?><br>');
+    info       = info.concat('Avg Temp: <?php echo $this->escapeHtml($city->avgTemp);?><br>');
+    info       = info.concat('Population: <?php echo $this->escapeHtml($city->population);?><br>');
+    info       = info.concat('Area: <?php echo $this->escapeHtml($city->landAreaSquareMiles);?>');
+    marker.bindPopup(info);
     marker.on('click', onCityMarkerClick);
 <?php endforeach; ?>
 
-var companyMarkers = L.markerClusterGroup();
+var companyMarkers = L.markerClusterGroup({spiderfyOnMaxZoom: false});
 var myIcon = L.divIcon({className: 'my-div-icon'});
 var data = [];
 <?php foreach ($companyLocations as $companyLocation) : ?>
@@ -53,7 +59,7 @@ var data = [];
 <?php endforeach; ?>
 map.addLayer(companyMarkers);
 
-var layer = L.TileLayer.maskCanvas();
+var layer = L.TileLayer.maskCanvas({radius: 10});
 layer.setData(data);
 map.addLayer(layer);
 

@@ -31,10 +31,11 @@ class IndexController extends AbstractActionController
       $cities           = $serviceManager->get('Application\Model\CityTable')->fetchAll();
       $companyLocations = $serviceManager->get('Application\Model\CompanyLocationTable')->fetchAll();
       $companyTable     = $serviceManager->get('Application\Model\CompanyTable');
+      $stateTable       = $serviceManager->get('Application\Model\StateTable');
 
       return new ViewModel(array('mapboxAccessToken' => $accessToken, 'mapboxProjectId' => $projectId,
                                  'cities' => $cities, 'companyLocations' => $companyLocations,
-                                 'companyTable' => $companyTable));
+                                 'companyTable' => $companyTable, 'stateTable' => $stateTable));
     }
 
     public function tablesByCityAction()
