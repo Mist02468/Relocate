@@ -96,13 +96,16 @@ function gatherDataForACity($publisherId, $cityId, $cityName, $stateAbbreviation
 function processPageOfResults($results, $cityId) {
     $numProcessed = 0;
     foreach ($results as $result) {
+        $numProcessed++;
         $companyName = $result->company->__toString();
+        if (empty(trim($companyName))) {
+            continue;
+        }
         $companyId   = getOrCreateCompany($companyName);
 
         $companyLatitude  = floatval($result->latitude->__toString());
         $companyLongitude = floatval($result->longitude->__toString());
         createCompanyLocationIfNecessary($companyId, $companyLatitude, $companyLongitude, $cityId);
-        $numProcessed++;
     }
     return $numProcessed;
 }

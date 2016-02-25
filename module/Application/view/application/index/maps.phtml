@@ -1,10 +1,14 @@
 <!--Maps Page-->
 
 <!--Leafletjs styles, Leafletjs scripts, and MaskCanvas plugin scripts-->
-<?php echo $this->headLink()->appendStylesheet('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css') ?>
+<?php echo $this->headLink()->appendStylesheet('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css')
+                            ->appendStylesheet($this->basePath() . '/css/MarkerCluster.css')
+                            ->appendStylesheet($this->basePath() . '/css/MarkerCluster.Default.css')?>
 <?php echo $this->headScript()->appendFile('http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js')
                               ->appendFile($this->basePath() . '/js/QuadTree.js')
-                              ->appendFile($this->basePath() . '/js/L.TileLayer.MaskCanvas.js') ?>
+                              ->appendFile($this->basePath() . '/js/L.TileLayer.MaskCanvas.js')
+                              ->appendFile($this->basePath() . '/js/leaflet.markercluster.js')
+                              ->appendFile($this->basePath() . '/js/leaflet.markercluster-src.js') ?>
 
 <!--Placeholder for the map-->
 <div id="map"></div>
@@ -19,7 +23,11 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
     accessToken: '<?php echo $this->mapboxAccessToken; ?>'
 }).addTo(map);
 
-function onMarkerClick(e) {
+function onCityMarkerClick(e) {
+    //alert("You clicked the marker at " + e.latlng);
+}
+
+function onCompanyMarkerClick(e) {
     //alert("You clicked the marker at " + e.latlng);
 }
 
@@ -28,13 +36,22 @@ function onMarkerClick(e) {
     var long = parseFloat('<?php echo $this->escapeHtml($city->coordinatesWest);?>');
     var marker = L.marker([lat, long]).addTo(map);
     marker.bindPopup('<?php echo $this->escapeHtml($city->name);?>');
-    marker.on('click', onMarkerClick);
+    marker.on('click', onCityMarkerClick);
 <?php endforeach; ?>
 
+var companyMarkers = L.markerClusterGroup();
+var myIcon = L.divIcon({className: 'my-div-icon'});
 var data = [];
 <?php foreach ($companyLocations as $companyLocation) : ?>
+    var marker = L.marker(['<?php echo $this->escapeHtml($companyLocation->coordinatesNorth);?>', '<?php echo $this->escapeHtml($companyLocation->coordinatesWest);?>'], {icon: myIcon});
+    marker.bindPopup('<?php echo $this->escapeHtml($companyTable->getCompany($companyLocation->company_id)->name);?>');
+    marker.on('click', onCompanyMarkerClick);
+
+    companyMarkers.addLayer(marker);
+
     data.push(['<?php echo $this->escapeHtml($companyLocation->coordinatesNorth);?>', '<?php echo $this->escapeHtml($companyLocation->coordinatesWest);?>']);
 <?php endforeach; ?>
+map.addLayer(companyMarkers);
 
 var layer = L.TileLayer.maskCanvas();
 layer.setData(data);

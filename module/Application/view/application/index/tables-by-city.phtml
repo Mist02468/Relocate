@@ -1,4 +1,9 @@
-<!--Tables Page-->
+<!--Tables Page, By City Tab-->
+
+<ul class="nav nav-tabs">
+  <li role="presentation" class="active"><a href="#!">By City</a></li>
+  <li role="presentation"><a href="<?php echo $this->url('application') ?>/index/tablesByCompany">By Company</a></li>
+</ul>
 
 <!--DataTables styles and scripts-->
 <?php echo $this->headLink()->appendStylesheet($this->basePath() . '/css/jquery.dataTables.css') ?>
@@ -39,7 +44,8 @@ function format (d) {
 
 $(document).ready(function() {
     var table = $('#main').DataTable({
-        "ajax": "<?php echo $this->url('application') ?>/index/tablesAjax",
+        "paging": false,
+        "ajax": "<?php echo $this->url('application') ?>/index/tablesByCityAjax",
         "columns": [
             {
                 "className":      'details-control',
@@ -57,6 +63,7 @@ $(document).ready(function() {
         ],
         "order": [[1, 'asc']]
     });
+    $("#main_wrapper").css("padding-top", "5px");
 
     //Event listener for opening and closing child rows
     $('#main tbody').on('click', 'td.details-control', function () {

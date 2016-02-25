@@ -30,20 +30,25 @@ class IndexController extends AbstractActionController
       $serviceManager   = $this->getServiceLocator();
       $cities           = $serviceManager->get('Application\Model\CityTable')->fetchAll();
       $companyLocations = $serviceManager->get('Application\Model\CompanyLocationTable')->fetchAll();
+      $companyTable     = $serviceManager->get('Application\Model\CompanyTable');
 
       return new ViewModel(array('mapboxAccessToken' => $accessToken, 'mapboxProjectId' => $projectId,
-                                 'cities' => $cities, 'companyLocations' => $companyLocations));
+                                 'cities' => $cities, 'companyLocations' => $companyLocations,
+                                 'companyTable' => $companyTable));
     }
 
-    public function tablesAction()
+    public function tablesByCityAction()
     {
         return new ViewModel();
     }
 
-    public function tablesAjaxAction()
+    public function tablesByCompanyAction()
     {
-        $db = $this->getServiceLocator()->get('db');
+        return new ViewModel();
+    }
 
+    public function tablesByCityAjaxAction()
+    {
         $sql = <<<SQL
 SELECT city.name AS cityName, state.name AS stateName, walkScore, transitScore, avgTemp, population, landAreaSquareMiles,
        GROUP_CONCAT(DISTINCT company.name ORDER BY company.name ASC SEPARATOR ';') AS companies
@@ -53,6 +58,28 @@ INNER JOIN companyLocation ON companyLocation.city_id = city.id
 INNER JOIN company ON company.id = companyLocation.company_id
 GROUP BY city.id
 SQL;
+        return $this->getAndPrepareData($sql);
+    }
+
+    public function tablesByCompanyAjaxAction()
+    {
+        $sql = <<<SQL
+SELECT company.name AS companyName,
+       GROUP_CONCAT(DISTINCT city.name ORDER BY city.name ASC SEPARATOR ', ') AS cities,
+       GROUP_CONCAT(DISTINCT state.name ORDER BY state.name ASC SEPARATOR ', ') AS states
+FROM company
+INNER JOIN companyLocation ON companyLocation.company_id = company.id
+INNER JOIN city ON city.id = companyLocation.city_id
+INNER JOIN state ON state.id = city.state_id
+GROUP BY company.id
+SQL;
+        return $this->getAndPrepareData($sql);
+    }
+
+    private function getAndPrepareData($sql)
+    {
+        $db = $this->getServiceLocator()->get('db');
+
         $stmt           = $db->query($sql);
         $resultSet      = $stmt->execute();
         $result         = $resultSet->getResource()->fetchAll(\PDO::FETCH_NAMED);
