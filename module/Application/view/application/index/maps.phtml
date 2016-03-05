@@ -15,52 +15,57 @@
 
 <script>
 
-var map = L.map('map').setView([39.828175, -98.5795], 5);
-L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-    maxZoom: 18,
-    id: '<?php echo $this->mapboxProjectId; ?>',
-    accessToken: '<?php echo $this->mapboxAccessToken; ?>'
-}).addTo(map);
+//City and company location data is loaded via ajax
+//Once this data is recieved, the map is created
+$.ajax({url: "<?php echo $this->url('application') ?>/index/mapsAjax", dataType: "json"})
+       .done(function(data) {
+            //separate out the data into different arrays
+            var cityData            = data[0];
+            var companyLocationData = data[1];
 
-function onCityMarkerClick(e) {
-    //alert("You clicked the marker at " + e.latlng);
-}
+            //create the map, with an inital view of the center of the U.S., somewhat zoomed out, and using mapbox open street map
+            var map = L.map('map').setView([39.828175, -98.5795], 5);
+            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                maxZoom: 18,
+                id: '<?php echo $this->mapboxProjectId; ?>',
+                accessToken: '<?php echo $this->mapboxAccessToken; ?>'
+            }).addTo(map);
 
-function onCompanyMarkerClick(e) {
-    //alert("You clicked the marker at " + e.latlng);
-}
+            //add a marker to the map for each city, where the marker shows the city information in a popup when clicked
+            for (i = 0; i < cityData.length; i++) {
+                var marker = L.marker([cityData[i].coordinatesNorth, cityData[i].coordinatesWest]).addTo(map);
 
-<?php foreach ($cities as $city) : ?>
-    var lat    = parseFloat('<?php echo $this->escapeHtml($city->coordinatesNorth);?>');
-    var long   = parseFloat('<?php echo $this->escapeHtml($city->coordinatesWest);?>');
-    var marker = L.marker([lat, long]).addTo(map);
-    var info   = '<b><?php echo $this->escapeHtml($city->name) . ', ' . $this->escapeHtml($this->stateTable->getState($city->state_id)->name);?></b><br>';
-    info       = info.concat('Walk Score: <?php echo $this->escapeHtml($city->walkScore);?><br>');
-    info       = info.concat('Transit Score: <?php echo $this->escapeHtml($city->transitScore);?><br>');
-    info       = info.concat('Avg Temp: <?php echo $this->escapeHtml($city->avgTemp);?><br>');
-    info       = info.concat('Population: <?php echo $this->escapeHtml($city->population);?><br>');
-    info       = info.concat('Area: <?php echo $this->escapeHtml($city->landAreaSquareMiles);?>');
-    marker.bindPopup(info);
-    marker.on('click', onCityMarkerClick);
-<?php endforeach; ?>
+                //create the html for the popup
+                var info   = '<b>' + cityData[i].cityName + ', ' + cityData[i].stateName + '</b><br>';
+                info       = info.concat('Walk Score: ' + cityData[i].walkScore + '<br>');
+                info       = info.concat('Transit Score: ' + cityData[i].transitScore + '<br>');
+                info       = info.concat('Avg Temp: ' + cityData[i].avgTemp + '<br>');
+                info       = info.concat('Population: ' + cityData[i].population + '<br>');
+                info       = info.concat('Area: ' + cityData[i].landAreaSquareMiles);
 
-var companyMarkers = L.markerClusterGroup({spiderfyOnMaxZoom: false});
-var myIcon = L.divIcon({className: 'my-div-icon'});
-var data = [];
-<?php foreach ($companyLocations as $companyLocation) : ?>
-    var marker = L.marker(['<?php echo $this->escapeHtml($companyLocation->coordinatesNorth);?>', '<?php echo $this->escapeHtml($companyLocation->coordinatesWest);?>'], {icon: myIcon});
-    marker.bindPopup('<?php echo $this->escapeHtml($companyTable->getCompany($companyLocation->company_id)->name);?>');
-    marker.on('click', onCompanyMarkerClick);
+                marker.bindPopup(info);
+            }
 
-    companyMarkers.addLayer(marker);
+            //add a clustered marker to the map for each company location
+            var companyMarkers = L.markerClusterGroup({spiderfyOnMaxZoom: false}); //data storage for the clustering
+            var data           = []; //data storage for the heatmap
+            var myIcon         = L.divIcon({className: 'my-div-icon'}); //don't use a visible marker
+            for (i = 0; i < companyLocationData.length; i++) {
+                //each invisible marker should shows the company name in a popup when clicked
+                var marker = L.marker([companyLocationData[i].coordinatesNorth, companyLocationData[i].coordinatesWest], {icon: myIcon});
+                marker.bindPopup(companyLocationData[i].companyName);
 
-    data.push(['<?php echo $this->escapeHtml($companyLocation->coordinatesNorth);?>', '<?php echo $this->escapeHtml($companyLocation->coordinatesWest);?>']);
-<?php endforeach; ?>
-map.addLayer(companyMarkers);
+                companyMarkers.addLayer(marker); //add this company location for the clustering
 
-var layer = L.TileLayer.maskCanvas({radius: 10});
-layer.setData(data);
-map.addLayer(layer);
+                data.push([companyLocationData[i].coordinatesNorth, companyLocationData[i].coordinatesWest]); //add this company location for the heatmap
+            }
+            map.addLayer(companyMarkers); //add the clustering to the map
+
+            //add a heatmap layer, where entire map is darkened and company locations appear as white circles of radius 10
+            var layer = L.TileLayer.maskCanvas({radius: 10});
+            layer.setData(data); //data includes all the company location coordinates
+            map.addLayer(layer); //add the heatmap to the map
+  });
 
 </script>
